@@ -10,11 +10,14 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = 'Žanras'
+        verbose_name_plural = 'Žanrai'
 
 class Book(models.Model):
     """Modelis reprezentuoja knygą (bet ne specifinę knygos kopiją)"""
     title = models.CharField('Pavadinimas', max_length=200)
-    author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True)
+    author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True, related_name='books')
     summary = models.TextField('Aprašymas', max_length=1000, help_text='Trumpas knygos aprašymas')
     isbn = models.CharField('ISBN', max_length=13,
                             help_text='13 Simbolių <a href="https://www.isbn-international.org/content/what-isbn">ISBN kodas</a>')
@@ -26,6 +29,15 @@ class Book(models.Model):
     def get_absolute_url(self):
         """Nurodo konkretaus aprašymo galinį adresą"""
         return reverse('book-detail', args=[str(self.id)])
+
+    def display_genre(self):
+        return ', '.join(genre.name for genre in self.genre.all()[:3])
+
+    display_genre.short_description = 'Žanras'
+
+    class Meta:
+        verbose_name = 'Knyga'
+        verbose_name_plural = 'Knygos'
 
 
 class BookInstance(models.Model):
@@ -51,6 +63,9 @@ class BookInstance(models.Model):
 
     class Meta:
         ordering = ['due_back']
+        verbose_name = 'Knygos egzempliorius'
+        verbose_name_plural = 'Knygų egzemplioriai'
+
 
     def __str__(self):
         return f'{self.id} ({self.book.title})'
@@ -63,6 +78,8 @@ class Author(models.Model):
 
     class Meta:
         ordering = ['last_name', 'first_name']
+        verbose_name = 'Autorius'
+        verbose_name_plural = 'Autoriai'
 
     def get_absolute_url(self):
         """Returns the url to access a particular author instance."""
@@ -71,3 +88,8 @@ class Author(models.Model):
     def __str__(self):
         """String for representing the Model object."""
         return f'{self.last_name} {self.first_name}'
+
+    def display_books(self):
+        return ', '.join(book.title for book in self.books.all()[:3])
+
+    display_books.short_description = 'Knygos'
