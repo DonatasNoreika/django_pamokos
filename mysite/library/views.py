@@ -1,7 +1,27 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from .models import Book, Author, BookInstance, Genre
 
 # Create your views here.
 
 def index(request):
-    return HttpResponse("Labas, pasauli!")
+    # Suskaičiuokime keletą pagrindinių objektų
+    num_books = Book.objects.all().count()
+    num_instances = BookInstance.objects.all().count()
+
+    # Laisvos knygos (tos, kurios turi statusą 'g')
+    num_instances_available = BookInstance.objects.filter(status__exact='g').count()
+
+    # Kiek yra autorių
+    num_authors = Author.objects.count()
+
+    # perduodame informaciją į šabloną žodyno pavidale:
+    context = {
+        'num_books': num_books,
+        'num_instances': num_instances,
+        'num_instances_available': num_instances_available,
+        'num_authors': num_authors,
+    }
+
+    # renderiname base.html, su duomenimis kintamąjame context
+    return render(request, 'index.html', context=context)
