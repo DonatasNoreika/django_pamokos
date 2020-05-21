@@ -75,6 +75,7 @@ class Author(models.Model):
     """Model representing an author."""
     first_name = models.CharField('Vardas', max_length=100)
     last_name = models.CharField('Pavardė', max_length=100)
+    description = models.TextField('Aprašymas', max_length=2000, default='')
 
     class Meta:
         ordering = ['last_name', 'first_name']

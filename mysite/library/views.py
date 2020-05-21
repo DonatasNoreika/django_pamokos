@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from .models import Book, Author, BookInstance, Genre
+from django.views import generic
 
 # Create your views here.
 
@@ -25,3 +26,35 @@ def index(request):
 
     # renderiname base.html, su duomenimis kintamąjame context
     return render(request, 'index.html', context=context)
+
+
+def authors(request):
+    authors = Author.objects.all()
+    context = {
+        'authors': authors
+    }
+    print(authors)
+    return render(request, 'authors.html', context=context)
+
+def author(request, author_id):
+    single_author = get_object_or_404(Author, pk=author_id)
+    return render(request, 'author.html', {'author': single_author})
+
+class BookListView(generic.ListView):
+    model = Book
+    # patys galite nustatyti šablonui kintamojo vardą
+    context_object_name = 'my_book_list'
+    # gauti sąrašą 3 knygų su žodžiu pavadinime 'ir'
+    # queryset = Book.objects.filter(title__icontains='Fight')[:3]
+    template_name = 'book_list.html'
+    #
+    # def get_context_data(self, **kwargs):
+    #     context = super(BookListView, self).get_context_data(**kwargs)
+    #     context['duomenys'] = 'eilutė iš lempos'
+    #     return context
+
+class BookDetailView(generic.DetailView):
+    model = Book
+    template_name = 'book_detail.html'
+
+
