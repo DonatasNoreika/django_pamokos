@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+  {% if book.cover %}
+  <img src="{{ book.cover.url }}" style="margin-bottom: 20px;">
+  {% endif %}
   <h1>{{ book.title }}</h1>
 
   <p><strong>Autorius:</strong> <a href="{% url 'author' book.author.pk %}">{{ book.author }}</a></p>
