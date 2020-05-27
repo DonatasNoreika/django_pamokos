@@ -1,6 +1,9 @@
 from django.db import models
 from django.urls import reverse  # Papildome imports
 import uuid
+from django.contrib.auth.models import User
+from datetime import date
+from tinymce.models import HTMLField
 
 
 # Create your models here.
@@ -46,6 +49,7 @@ class BookInstance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text='Unikalus ID knygos kopijai')
     book = models.ForeignKey('Book', on_delete=models.SET_NULL, null=True)
     due_back = models.DateField('Bus prieinama', null=True, blank=True)
+    reader = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     LOAN_STATUS = (
         ('a', 'Administruojama'),
@@ -53,6 +57,12 @@ class BookInstance(models.Model):
         ('g', 'Galima paimti'),
         ('r', 'Rezervuota'),
     )
+
+    @property
+    def is_overdue(self):
+        if self.due_back and date.today() > self.due_back:
+            return True
+        return False
 
     status = models.CharField(
         max_length=1,
@@ -76,7 +86,7 @@ class Author(models.Model):
     """Model representing an author."""
     first_name = models.CharField('Vardas', max_length=100)
     last_name = models.CharField('Pavardė', max_length=100)
-    description = models.TextField('Aprašymas', max_length=2000, default='')
+    description = HTMLField("Aprašymas")
 
     class Meta:
         ordering = ['last_name', 'first_name']
