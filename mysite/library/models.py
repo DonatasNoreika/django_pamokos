@@ -105,3 +105,14 @@ class Author(models.Model):
         return ', '.join(book.title for book in self.books.all()[:3])
 
     display_books.short_description = 'Knygos'
+
+
+class BookReview(models.Model):
+    book = models.ForeignKey('Book', on_delete=models.SET_NULL, null=True, blank=True)
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    content = models.TextField('Atsiliepimas', max_length=2000)
+
+    class Meta:
+        verbose_name = 'Atsiliepimas'
+        verbose_name_plural = 'Atsiliepimai'

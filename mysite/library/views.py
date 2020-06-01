@@ -1,10 +1,19 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, reverse
 from django.http import HttpResponse
 from .models import Book, Author, BookInstance, Genre
 from django.views import generic
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
+
+from django.shortcuts import redirect
+from django.contrib.auth.forms import User
+from django.views.decorators.csrf import csrf_protect
+from django.contrib import messages
+
+from .forms import BookReviewForm
+# Importuojame FormMixin, kurį naudosime BookDetailView klasėje
+from django.views.generic.edit import FormMixin
 
 
 # Create your views here.
@@ -63,6 +72,33 @@ def search(request):
     search_results = Book.objects.filter(Q(title__icontains=query) | Q(summary__icontains=query))
     return render(request, 'search.html', {'books': search_results, 'query': query})
 
+@csrf_protect
+def register(request):
+    if request.method == "POST":
+        # pasiimame reikšmes iš registracijos formos
+        username = request.POST['username']
+        email = request.POST['email']
+        password = request.POST['password']
+        password2 = request.POST['password2']
+        # tikriname, ar sutampa slaptažodžiai
+        if password == password2:
+            # tikriname, ar neužimtas username
+            if User.objects.filter(username=username).exists():
+                messages.error(request, f'Vartotojo vardas {username} užimtas!')
+                return redirect('register')
+            else:
+                # tikriname, ar nėra tokio pat email
+                if User.objects.filter(email=email).exists():
+                    messages.error(request, f'Vartotojas su el. paštu {email} jau užregistruotas!')
+                    return redirect('register')
+                else:
+                    # jeigu viskas tvarkoje, sukuriame naują vartotoją
+                    User.objects.create_user(username=username, email=email, password=password)
+        else:
+            messages.error(request, 'Slaptažodžiai nesutampa!')
+            return redirect('register')
+    return render(request, 'register.html')
+
 class BookListView(generic.ListView):
     model = Book
     # patys galite nustatyti šablonui kintamojo vardą
@@ -77,9 +113,40 @@ class BookListView(generic.ListView):
     #     context['duomenys'] = 'eilutė iš lempos'
     #     return context
 
-class BookDetailView(generic.DetailView):
+
+class BookDetailView(FormMixin, generic.DetailView):
     model = Book
     template_name = 'book_detail.html'
+    form_class = BookReviewForm
+
+    class Meta:
+        ordering = ['title']
+
+    # nurodome, kur atsidursime komentaro sėkmės atveju.
+    def get_success_url(self):
+        return reverse('book-detail', kwargs={'pk': self.object.id})
+
+    # įtraukiame formą į kontekstą, inicijuojame pradinę 'book' reikšmę.
+    def get_context_data(self, *args, **kwargs):
+        context = super(BookDetailView, self).get_context_data(**kwargs)
+        context['form'] = BookReviewForm(initial={'book': self.object})
+        return context
+
+    # standartinis post metodo perrašymas, naudojant FormMixin, galite kopijuoti tiesiai į savo projektą.
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    # štai čia nurodome, kad knyga bus būtent ta, po kuria komentuojame, o vartotojas bus tas, kuris yra prisijungęs.
+    def form_valid(self, form):
+        form.instance.book = self.object
+        form.instance.reviewer = self.request.user
+        form.save()
+        return super(BookDetailView, self).form_valid(form)
 
 
 class LoanedBooksByUserListView(LoginRequiredMixin, generic.ListView):
