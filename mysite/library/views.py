@@ -15,6 +15,10 @@ from .forms import BookReviewForm
 # Importuojame FormMixin, kurį naudosime BookDetailView klasėje
 from django.views.generic.edit import FormMixin
 
+from django.contrib.auth.decorators import login_required
+from .forms import BookReviewForm, UserUpdateForm, ProfilisUpdateForm
+
+
 
 # Create your views here.
 
@@ -99,6 +103,26 @@ def register(request):
             return redirect('register')
     return render(request, 'register.html')
 
+@login_required
+def profilis(request):
+    if request.method == "POST":
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = ProfilisUpdateForm(request.POST, request.FILES, instance=request.user.profilis)
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, f"Profilis atnaujintas")
+            return redirect('profilis')
+    else:
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = ProfilisUpdateForm(instance=request.user.profilis)
+
+    context = {
+        'u_form': u_form,
+        'p_form': p_form,
+    }
+    return render(request, 'profilis.html', context)
+
 class BookListView(generic.ListView):
     model = Book
     # patys galite nustatyti šablonui kintamojo vardą
@@ -147,6 +171,7 @@ class BookDetailView(FormMixin, generic.DetailView):
         form.instance.reviewer = self.request.user
         form.save()
         return super(BookDetailView, self).form_valid(form)
+
 
 
 class LoanedBooksByUserListView(LoginRequiredMixin, generic.ListView):
