@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from datetime import date
 from tinymce.models import HTMLField
 from PIL import Image
+from django.utils.translation import gettext_lazy as _
 
 
 # Create your models here.
@@ -18,15 +19,26 @@ class Genre(models.Model):
         verbose_name = 'Žanras'
         verbose_name_plural = 'Žanrai'
 
+# class Book(models.Model):
+#     """Modelis reprezentuoja knygą (bet ne specifinę knygos kopiją)"""
+#     title = models.CharField(_('Pavadinimas'), max_length=200)
+#     author = models.ForeignKey(_('Author'), on_delete=models.SET_NULL, null=True, related_name='books')
+#     summary = models.TextField(_('Aprašymas'), max_length=1000, help_text=_('Trumpas knygos aprašymas'))
+#     isbn = models.CharField('ISBN', max_length=13,
+#                             help_text='13 Simbolių <a href="https://www.isbn-international.org/content/what-isbn">ISBN kodas</a>')
+#     genre = models.ManyToManyField(Genre, help_text=_('Išrinkite žanrą(us) šiai knygai'))
+#     cover = models.ImageField(_('Viršelis'), upload_to='covers', null=True)
+
 class Book(models.Model):
     """Modelis reprezentuoja knygą (bet ne specifinę knygos kopiją)"""
-    title = models.CharField('Pavadinimas', max_length=200)
-    author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True, related_name='books')
-    summary = models.TextField('Aprašymas', max_length=1000, help_text='Trumpas knygos aprašymas')
+    title = models.CharField(_('Title'), max_length=200)
+    author = models.ForeignKey('Author', verbose_name=_("Author"), on_delete=models.SET_NULL, null=True, related_name='books')
+    summary = models.TextField(_('Summary'), max_length=1000, help_text=_('Short book summary'))
     isbn = models.CharField('ISBN', max_length=13,
                             help_text='13 Simbolių <a href="https://www.isbn-international.org/content/what-isbn">ISBN kodas</a>')
-    genre = models.ManyToManyField(Genre, help_text='Išrinkite žanrą(us) šiai knygai')
-    cover = models.ImageField('Viršelis', upload_to='covers', null=True)
+    genre = models.ManyToManyField(Genre, help_text=_('Please choose genres'))
+    # genre = models.ForeignKey('Žanras', Genre)
+    cover = models.ImageField(_('Cover'), upload_to='covers', null=True)
 
     def __str__(self):
         return self.title
