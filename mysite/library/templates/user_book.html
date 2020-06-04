@@ -7,6 +7,9 @@
         <img class="rounded-circle" src="{{object.reader.profilis.nuotrauka.url}}">
         <li><strong class="{% if object.is_overdue %}text-danger{% endif %}">Pavadinimas: {{object.book.title}}</strong></li>
         <li><strong>Gražinimo terminas:</strong> {{object.due_back}}</li>
+            <div>
+                <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'my-book-update' object.id %}">Redaguoti</a>
+            </div>
         <br/>
       </li>
     </ul>
