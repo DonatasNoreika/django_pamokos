@@ -1,23 +1,22 @@
 from django.shortcuts import render, get_object_or_404, reverse
 from django.http import HttpResponse
 from .models import Book, Author, BookInstance, Genre
-from django.views import generic
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.contrib.auth.mixins import LoginRequiredMixin
-
 from django.shortcuts import redirect
 from django.contrib.auth.forms import User
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
-
-from .forms import BookReviewForm
-# Importuojame FormMixin, kurį naudosime BookDetailView klasėje
-from django.views.generic.edit import FormMixin
-
 from django.contrib.auth.decorators import login_required
 from .forms import BookReviewForm, UserUpdateForm, ProfilisUpdateForm
 from django.utils.translation import gettext as _
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import FormMixin
+from django.views.generic import (
+    ListView,
+    DetailView,
+)
 
 
 # Create your views here.
@@ -123,7 +122,7 @@ def profilis(request):
     }
     return render(request, 'profilis.html', context)
 
-class BookListView(generic.ListView):
+class BookListView(ListView):
     model = Book
     # patys galite nustatyti šablonui kintamojo vardą
     context_object_name = 'my_book_list'
@@ -138,7 +137,7 @@ class BookListView(generic.ListView):
     #     return context
 
 
-class BookDetailView(FormMixin, generic.DetailView):
+class BookDetailView(FormMixin, DetailView):
     model = Book
     template_name = 'book_detail.html'
     form_class = BookReviewForm
@@ -174,10 +173,15 @@ class BookDetailView(FormMixin, generic.DetailView):
 
 
 
-class LoanedBooksByUserListView(LoginRequiredMixin, generic.ListView):
+class BooksByUserListView(LoginRequiredMixin, ListView):
     model = BookInstance
     template_name = 'user_books.html'
     paginate_by = 10
 
     def get_queryset(self):
         return BookInstance.objects.filter(reader=self.request.user).filter(status__exact='p').order_by('due_back')
+
+
+class BookByUserDetailView(LoginRequiredMixin, DetailView):
+    model = BookInstance
+    template_name = 'user_book.html'

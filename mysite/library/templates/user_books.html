@@ -2,18 +2,20 @@
 
 {% block content %}
     <h1>Mano paimtos knygos</h1>
+    {% if object_list %}
+        {% for bookinst in object_list %}
+    <hr>
+        <ul>
 
-    {% if bookinstance_list %}
-    <ul>
-
-      {% for bookinst in bookinstance_list %}
         <img class="rounded-circle" src="{{bookinst.reader.profilis.nuotrauka.url}}">
-      <li class="{% if bookinst.is_overdue %}text-danger{% endif %}">
-        <a href="{% url 'book-detail' bookinst.book.pk %}">{{bookinst.book.title}}</a> ({{ bookinst.due_back }})
+        <li><strong class="{% if bookinst.is_overdue %}text-danger{% endif %}">Pavadinimas: {{bookinst.book.title}}</strong></li>
+        <li><strong>Gražinimo terminas:</strong> {{bookinst.due_back}}</li>
+        <br/>
+        <a class="btn btn-primary" href="{{ bookinst.pk }}" role="button">Peržiūrėti</a>
       </li>
-      {% endfor %}
-    </ul>
 
+    </ul>
+{% endfor %}
     {% else %}
       <p>There are no books borrowed.</p>
     {% endif %}

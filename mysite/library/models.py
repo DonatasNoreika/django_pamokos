@@ -59,7 +59,7 @@ class Book(models.Model):
 
 class BookInstance(models.Model):
     """Modelis, aprašantis konkrečios knygos kopijos būseną"""
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text='Unikalus ID knygos kopijai')
+    uuid = models.UUIDField(default=uuid.uuid4, help_text='Unikalus ID knygos kopijai')
     book = models.ForeignKey('Book', on_delete=models.SET_NULL, null=True)
     due_back = models.DateField('Bus prieinama', null=True, blank=True)
     reader = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
@@ -81,7 +81,7 @@ class BookInstance(models.Model):
         max_length=1,
         choices=LOAN_STATUS,
         blank=True,
-        default='a',
+        default='p',
         help_text='Statusas',
     )
 
