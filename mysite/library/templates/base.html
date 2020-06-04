@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
+{% load i18n %}
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light static-top mb-5 shadow">
   <div class="container">
@@ -43,6 +44,7 @@
               </svg>
             {{ user.get_username }}</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'my-borrowed'%}">Mano knygos</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'my-borrowed-new'%}?next=/library">{% trans "New" %}</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'logout'%}?next=/library">Atsijungti</a></li>
           {% else %}
             <li class="nav-item"><a class="nav-link" href="{% url 'login'%}?next={{request.path}}">Prisijungti</a></li>

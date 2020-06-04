@@ -16,6 +16,7 @@ from django.views.generic.edit import FormMixin
 from django.views.generic import (
     ListView,
     DetailView,
+    CreateView,
 )
 
 
@@ -185,3 +186,13 @@ class BooksByUserListView(LoginRequiredMixin, ListView):
 class BookByUserDetailView(LoginRequiredMixin, DetailView):
     model = BookInstance
     template_name = 'user_book.html'
+
+class BookByUserCreateView(LoginRequiredMixin, CreateView):
+    model = BookInstance
+    fields = ['book', 'due_back']
+    success_url = "/library/mybooks/"
+    template_name = 'user_book_form.html'
+
+    def form_valid(self, form):
+        form.instance.reader = self.request.user
+        return super().form_valid(form)
