@@ -6,6 +6,7 @@ from datetime import date
 from tinymce.models import HTMLField
 from PIL import Image
 from django.utils.translation import gettext_lazy as _
+import datetime
 
 
 # Create your models here.
@@ -18,6 +19,7 @@ class Genre(models.Model):
     class Meta:
         verbose_name = 'Žanras'
         verbose_name_plural = 'Žanrai'
+
 
 # class Book(models.Model):
 #     """Modelis reprezentuoja knygą (bet ne specifinę knygos kopiją)"""
@@ -32,7 +34,8 @@ class Genre(models.Model):
 class Book(models.Model):
     """Modelis reprezentuoja knygą (bet ne specifinę knygos kopiją)"""
     title = models.CharField(_('Title'), max_length=200)
-    author = models.ForeignKey('Author', verbose_name=_("Author"), on_delete=models.SET_NULL, null=True, related_name='books')
+    author = models.ForeignKey('Author', verbose_name=_("Author"), on_delete=models.SET_NULL, null=True,
+                               related_name='books')
     summary = models.TextField(_('Summary'), max_length=1000, help_text=_('Short book summary'))
     isbn = models.CharField('ISBN', max_length=13,
                             help_text='13 Simbolių <a href="https://www.isbn-international.org/content/what-isbn">ISBN kodas</a>')
@@ -90,7 +93,6 @@ class BookInstance(models.Model):
         verbose_name = 'Knygos egzempliorius'
         verbose_name_plural = 'Knygų egzemplioriai'
 
-
     def __str__(self):
         return f'{self.id} ({self.book.title})'
 
@@ -130,6 +132,7 @@ class BookReview(models.Model):
         verbose_name = 'Atsiliepimas'
         verbose_name_plural = 'Atsiliepimai'
 
+
 class Profilis(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nuotrauka = models.ImageField(default="default.png", upload_to="profile_pics")
@@ -137,11 +140,19 @@ class Profilis(models.Model):
     def __str__(self):
         return f"{self.user.username} profilis"
 
+    def crop_center(self, pil_img, crop_width, crop_height):
+        img_width, img_height = pil_img.size
+        return pil_img.crop(((img_width - crop_width) // 2,
+                             (img_height - crop_height) // 2,
+                             (img_width + crop_width) // 2,
+                             (img_height + crop_height) // 2))
+
     def save(self):
         super().save()
         img = Image.open(self.nuotrauka.path)
         if img.height > 300 or img.width > 300:
             output_size = (300, 300)
+            img = self.crop_center(img, min(img.size), min(img.size))
             img.thumbnail(output_size)
             img.save(self.nuotrauka.path)
 
